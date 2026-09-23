@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (
     QLabel
 )
 
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal,QTimer
 
 
 # ============================================================
@@ -501,7 +501,7 @@ class TTSThread(QThread):
             index = 0
 
             while index < len(chunks):
-
+                
                 chunk = chunks[index]
 
                 self.progress.emit(
@@ -742,6 +742,13 @@ class TextToSpeechGUI(QWidget):
         layout.addWidget(
             self.voice_selector
         )
+  
+        self.timer_label = QLabel("Elapsed: 00:00")
+        layout.addWidget(self.timer_label)
+        
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_timer)
+        self.elapsed_seconds = 0
 
         # ----------------------------------------------------
         # Generate button
@@ -765,10 +772,16 @@ class TextToSpeechGUI(QWidget):
 
         self.thread = None
 
-
     # ========================================================
     # START GENERATION
     # ========================================================
+    
+    def update_timer(self):
+                self.elapsed_seconds += 1
+                minutes = self.elapsed_seconds // 60
+                seconds = self.elapsed_seconds % 60
+                self.timer_label.setText(f"Elapsed: {minutes:02d}:{seconds:02d}")
+        
 
     def generate_speech(self):
 
@@ -789,7 +802,7 @@ class TextToSpeechGUI(QWidget):
         self.info.setText(
             "Starting speech generation..."
         )
-
+     
         self.btn.setEnabled(
             False
         )
@@ -810,6 +823,10 @@ class TextToSpeechGUI(QWidget):
         self.thread.progress.connect(
             self.show_progress
         )
+        
+        self.elapsed_seconds = 0
+        self.timer_label.setText("Elapsed: 00:00")
+        self.timer.start(1000)
 
         self.thread.start()
 
@@ -823,6 +840,8 @@ class TextToSpeechGUI(QWidget):
         self.info.setText(
             message
         )
+        
+        
 
 
     # ========================================================
@@ -842,7 +861,8 @@ class TextToSpeechGUI(QWidget):
         self.btn.setEnabled(
             True
         )
-
+        
+        self.timer.stop()
 
     # ========================================================
     # ERROR
