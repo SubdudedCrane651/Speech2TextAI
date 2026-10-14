@@ -42,7 +42,7 @@ if not OPENROUTER_API_KEY:
 
 API_URL = "https://openrouter.ai/api/v1/audio/speech"
 
-MODEL = "deepgram/flux-tts:free"
+MODEL = "deepgram/aura-2"
 
 # Start conservatively.
 # If 413 occurs, the program automatically reduces it.
@@ -695,43 +695,25 @@ class TextToSpeechGUI(QWidget):
 
         voices = [
 
-            "flux-alexis-en",
-            "flux-bree-en",
-            "flux-brittany-en",
-            "flux-brooke-en",
-            "flux-bruce-en",
-            "flux-cliff-en",
-            "flux-cole-en",
-            "flux-colin-en",
-            "flux-conor-en",
-            "flux-donovan-en",
-            "flux-drew-en",
-            "flux-elise-en",
-            "flux-gemma-en",
-            "flux-haley-en",
-            "flux-hannah-en",
-            "flux-heather-en",
-            "flux-jack-en",
-            "flux-kai-en",
-            "flux-kelsey-en",
-            "flux-kit-en",
-            "flux-maeve-en",
-            "flux-marcelo-en",
-            "flux-marcus-en",
-            "flux-meena-en",
-            "flux-meghan-en",
-            "flux-miles-en",
-            "flux-naveen-en",
-            "flux-paige-en",
-            "flux-priya-en",
-            "flux-rufus-en",
-            "flux-sean-en",
-            "flux-sharon-en",
-            "flux-sienna-en",
-            "flux-tanner-en",
-            "flux-wade-en",
-            "flux-wes-en"
+            # --- Aura‑2 English ---
+            "aura-2-thalia-en",
+            "aura-2-andromeda-en",
+            "aura-2-helena-en",
+            "aura-2-apollo-en",
+            "aura-2-arcas-en",
+            "aura-2-aries-en",
+            "aura-2-amalthea-en",
+
+            # --- Aura‑2 French ---
+            "aura-2-thalia-fr",
+            "aura-2-andromeda-fr",
+            "aura-2-helena-fr",
+            "aura-2-apollo-fr",
+            "aura-2-arcas-fr",
+            "aura-2-aries-fr",
+            "aura-2-amalthea-fr"
         ]
+
 
         self.voice_selector = QComboBox()
 
