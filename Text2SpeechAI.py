@@ -682,12 +682,15 @@ class TextToSpeechGUI(QWidget):
         self.textbox = QTextEdit()
 
         self.textbox.setPlaceholderText(
-            "Type English text here..."
+            "Type English or Frenchtext here..."
         )
 
         layout.addWidget(
             self.textbox
         )
+        
+        self.textbox.textChanged.connect(self.update_cost)
+
 
         # ----------------------------------------------------
         # Voices
@@ -731,6 +734,9 @@ class TextToSpeechGUI(QWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_timer)
         self.elapsed_seconds = 0
+        
+        self.cost_label = QLabel("Estimated Cost: $0.00")
+        layout.addWidget(self.cost_label)
 
         # ----------------------------------------------------
         # Generate button
@@ -757,6 +763,20 @@ class TextToSpeechGUI(QWidget):
     # ========================================================
     # START GENERATION
     # ========================================================
+    
+    def update_cost(self):
+        text = self.textbox.toPlainText()
+        char_count = len(text)
+
+        # Deepgram Aura-2 pricing:
+        # $30 per 1,000,000 characters → $0.00003 per character
+        cost_per_char = 30 / 1_000_000
+
+        estimated_cost = char_count * cost_per_char
+
+        self.cost_label.setText(
+            f"Estimated Cost: ${estimated_cost:.4f}  ({char_count} characters)"
+    )
     
     def update_timer(self):
                 self.elapsed_seconds += 1
