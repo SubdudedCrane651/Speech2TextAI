@@ -682,7 +682,7 @@ class TextToSpeechGUI(QWidget):
         self.textbox = QTextEdit()
 
         self.textbox.setPlaceholderText(
-            "Type English or Frenchtext here..."
+            "Type English or French text here..."
         )
 
         layout.addWidget(
