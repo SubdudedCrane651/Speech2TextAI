@@ -14,11 +14,15 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QTextEdit,
     QComboBox,
-    QLabel
-)
+    QLabel,
+    QHBoxLayout,
+    QFileDialog,
+    QLineEdit,
+    )
 
-from PyQt6.QtCore import QThread, pyqtSignal,QTimer
+from PyQt6.QtCore import QThread, pyqtSignal,QTimer, QStandardPaths
 
+folder = os.path.dirname(os.path.abspath(__file__))
 
 # ============================================================
 # LOAD API KEY
@@ -34,7 +38,6 @@ if not OPENROUTER_API_KEY:
     raise RuntimeError(
         "OPENROUTER_API_KEY was not found in config.json"
     )
-
 
 # ============================================================
 # SETTINGS
@@ -61,7 +64,6 @@ REQUEST_DELAY = 0.5
 SAMPLE_RATE = 24000
 NUM_CHANNELS = 1
 SAMPLE_WIDTH = 2
-
 
 # ============================================================
 # TEXT SPLITTER
@@ -656,6 +658,18 @@ class TextToSpeechGUI(QWidget):
         self.setWindowTitle(
             "Text → Speech (Using OpenRouter Deepgram Aura-2)"
         )
+        
+        layout = QVBoxLayout()
+
+        # -------------------------
+        # Save location controls
+        # -------------------------
+        layout.addWidget(QLabel("Save Location"))
+
+        row = QHBoxLayout()
+
+        self.cboSaveLocation = QComboBox()
+
 
         self.setMinimumWidth(700)
 
@@ -787,6 +801,109 @@ class TextToSpeechGUI(QWidget):
         )
 
         self.thread = None
+        
+        row.addWidget(self.cboSaveLocation)
+        
+        layout.addLayout(row)
+               
+        self.setLayout(layout)
+        
+        self.load_locations()
+        
+    # ------------------------------------
+    # Load predefined and saved locations
+    # ------------------------------------
+    def load_locations(self):
+
+        self.cboSaveLocation.clear()
+
+        documents = QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.DocumentsLocation
+        )
+
+        downloads = QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.DownloadLocation
+        )
+
+        desktop = QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.DesktopLocation
+        )
+        
+        self.cboSaveLocation.addItem(documents)
+        self.cboSaveLocation.addItem(downloads)
+        self.cboSaveLocation.addItem(desktop)
+        self.cboSaveLocation.addItem("Custom Folder...")
+        
+        self.cboSaveLocation.currentIndexChanged.connect(
+            self.location_changed
+        )
+        
+    def location_changed(self, index):
+
+        if self.cboSaveLocation.currentText() == "Custom Folder...":
+
+            folder = QFileDialog.getExistingDirectory(
+                self,
+                "Select Output Folder"
+            )
+
+            if folder:
+
+                # Store selected folder
+                self.custom_folder = folder
+
+                # Replace Custom Folder item
+                if self.cboSaveLocation.findText(folder) == -1:
+                    self.cboSaveLocation.addItem(folder)
+
+                self.cboSaveLocation.setCurrentText(folder)        
+
+    # ------------------------------------
+    # Get output file path
+    # ------------------------------------
+    def get_output_path(self):
+
+        folder = self.cboSaveLocation.currentText()
+
+        if folder == "Custom Folder..." and self.custom_folder:
+            folder = self.custom_folder
+
+        return os.path.join(
+            folder,
+            "tts_output.wav"
+        ) 
+            
+    # ------------------------------------
+    # Add custom folder
+    # ------------------------------------
+    def add_custom_folder(self):
+
+            folder = QFileDialog.getExistingDirectory(
+                self,
+                "Select Folder"
+            )
+
+            if not folder:
+                return
+
+            if self.cboSaveLocation.findText(folder) == -1:
+                self.cboSaveLocation.addItem(folder)
+
+            custom_locations = self.settings.value(
+                "custom_locations",
+                [],
+                type=list
+            )
+
+            if folder not in custom_locations:
+                custom_locations.append(folder)
+
+                self.settings.setValue(
+                    "custom_locations",
+                    custom_locations
+                )
+
+            self.cboSaveLocation.setCurrentText(folder)
 
     # ========================================================
     # START GENERATION
@@ -871,9 +988,6 @@ class TextToSpeechGUI(QWidget):
             message
         )
         
-        
-
-
     # ========================================================
     # SUCCESS
     # ========================================================
