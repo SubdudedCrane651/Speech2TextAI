@@ -24,6 +24,9 @@ from PyQt6.QtCore import QThread, pyqtSignal,QTimer, QStandardPaths
 
 folder = os.path.dirname(os.path.abspath(__file__))
 
+global audio_path
+audio_path = os.path.join(folder, "tts_output.wav")
+
 # ============================================================
 # LOAD API KEY
 # ============================================================
@@ -571,8 +574,11 @@ class TTSThread(QThread):
             # ------------------------------------------------
             # Save final WAV
             # ------------------------------------------------
-
-            output_wav = "tts_output.wav"
+            
+            global audio_path
+            
+            #output_wav = "tts_output.wav"
+            output_wav = audio_path
 
             self.progress.emit(
                 "All parts generated. Combining audio..."
@@ -590,7 +596,8 @@ class TTSThread(QThread):
             # Convert WAV to MP3
             # ------------------------------------------------
 
-            output_mp3 = "tts_output.mp3"
+            #output_mp3 = "tts_output.mp3"
+            output_mp3 = os.path.splitext(audio_path)[0] + ".mp3"
 
             self.progress.emit(
                 "WAV created. Converting to MP3..."
@@ -660,6 +667,8 @@ class TextToSpeechGUI(QWidget):
         )
         
         layout = QVBoxLayout()
+        
+        global audio_path
 
         # -------------------------
         # Save location controls
@@ -704,7 +713,6 @@ class TextToSpeechGUI(QWidget):
         )
         
         self.textbox.textChanged.connect(self.update_cost)
-
 
         # ----------------------------------------------------
         # Voices
@@ -839,7 +847,7 @@ class TextToSpeechGUI(QWidget):
         )
         
     def location_changed(self, index):
-
+        
         if self.cboSaveLocation.currentText() == "Custom Folder...":
 
             folder = QFileDialog.getExistingDirectory(
@@ -857,6 +865,9 @@ class TextToSpeechGUI(QWidget):
                     self.cboSaveLocation.addItem(folder)
 
                 self.cboSaveLocation.setCurrentText(folder)        
+                
+                global audio_path
+                audio_path = os.path.join(folder, "tts_output.wav")
 
     # ------------------------------------
     # Get output file path
