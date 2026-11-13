@@ -654,7 +654,7 @@ class TextToSpeechGUI(QWidget):
         super().__init__()
 
         self.setWindowTitle(
-            "Text → Speech (Flux-TTS Free)"
+            "Text → Speech (Using OpenRouter Deepgram Aura-2)"
         )
 
         self.setMinimumWidth(700)
