@@ -767,7 +767,6 @@ class TextToSpeechGUI(QWidget):
     "aura-2-hector-fr"
 ]
 
-
         self.voice_selector = QComboBox()
 
         self.voice_selector.addItems(
@@ -819,6 +818,21 @@ class TextToSpeechGUI(QWidget):
         self.load_locations()
         
     # ------------------------------------
+    # Get output file path
+    # ------------------------------------
+    def get_output_path(self):
+
+        folder = self.cboSaveLocation.currentText()
+
+        if folder == "Custom Folder..." and self.custom_folder:
+            folder = self.custom_folder
+
+        return os.path.join(
+            folder,
+            "tts_output.wav"
+        )         
+        
+    # ------------------------------------
     # Load predefined and saved locations
     # ------------------------------------
     def load_locations(self):
@@ -868,22 +882,7 @@ class TextToSpeechGUI(QWidget):
                 
                 global audio_path
                 audio_path = os.path.join(folder, "tts_output.wav")
-
-    # ------------------------------------
-    # Get output file path
-    # ------------------------------------
-    def get_output_path(self):
-
-        folder = self.cboSaveLocation.currentText()
-
-        if folder == "Custom Folder..." and self.custom_folder:
-            folder = self.custom_folder
-
-        return os.path.join(
-            folder,
-            "tts_output.wav"
-        ) 
-            
+          
     # ------------------------------------
     # Add custom folder
     # ------------------------------------
