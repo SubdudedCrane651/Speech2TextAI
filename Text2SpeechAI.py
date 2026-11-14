@@ -207,12 +207,13 @@ class TTSThread(QThread):
     error = pyqtSignal(str)
     progress = pyqtSignal(str)
 
-    def __init__(self, text, voice):
+    def __init__(self, text, voice,selection):
 
         super().__init__()
 
         self.text = text
         self.voice = voice
+        self.selection = selection
 
 
     # ========================================================
@@ -577,8 +578,9 @@ class TTSThread(QThread):
             
             global audio_path
             
+            output_wav = os.path.join(self.selection, "tts_output.wav")  
             #output_wav = "tts_output.wav"
-            output_wav = audio_path
+            #output_wav = audio_path
 
             self.progress.emit(
                 "All parts generated. Combining audio..."
@@ -597,7 +599,8 @@ class TTSThread(QThread):
             # ------------------------------------------------
 
             #output_mp3 = "tts_output.mp3"
-            output_mp3 = os.path.splitext(audio_path)[0] + ".mp3"
+            output_mp3 = os.path.join(self.selection, "tts_output.mp3") 
+            #output_mp3 = os.path.splitext(audio_path)[0] + ".mp3"
 
             self.progress.emit(
                 "WAV created. Converting to MP3..."
@@ -822,15 +825,32 @@ class TextToSpeechGUI(QWidget):
     # ------------------------------------
     def get_output_path(self):
 
-        folder = self.cboSaveLocation.currentText()
+        selection = self.cboSaveLocation.currentText()
+        
+        if selection == "Default":
+            folder = QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.DocumentsLocation
+            )
 
-        if folder == "Custom Folder..." and self.custom_folder:
+        if selection == "Documents":
+            folder = QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.DocumentsLocation
+            )
+
+        elif selection == "Downloads":
+            folder = QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.DownloadLocation
+            )
+
+        elif selection == "Desktop":
+            folder = QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.DesktopLocation
+            )
+
+        else:
             folder = self.custom_folder
 
-        return os.path.join(
-            folder,
-            "tts_output.wav"
-        )         
+        return os.path.join(folder, "tts_output.wav")       
         
     # ------------------------------------
     # Load predefined and saved locations
@@ -838,7 +858,9 @@ class TextToSpeechGUI(QWidget):
     def load_locations(self):
 
         self.cboSaveLocation.clear()
-
+        
+        default = os.path.dirname(os.path.abspath(__file__))
+        
         documents = QStandardPaths.writableLocation(
             QStandardPaths.StandardLocation.DocumentsLocation
         )
@@ -851,6 +873,7 @@ class TextToSpeechGUI(QWidget):
             QStandardPaths.StandardLocation.DesktopLocation
         )
         
+        self.cboSaveLocation.addItem(default)
         self.cboSaveLocation.addItem(documents)
         self.cboSaveLocation.addItem(downloads)
         self.cboSaveLocation.addItem(desktop)
@@ -963,10 +986,13 @@ class TextToSpeechGUI(QWidget):
         self.btn.setEnabled(
             False
         )
+        
+        selection = self.cboSaveLocation.currentText()
 
         self.thread = TTSThread(
             text,
-            voice
+            voice,
+            selection
         )
 
         self.thread.finished.connect(
